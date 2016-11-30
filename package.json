@@ -1,5 +1,5 @@
 {
-  "name": "react-native-media-kit",
+  "name": "react-native-fullscreen-media-kit",
   "version": "0.2.0",
   "description": "Video and Audio component for react-native apps, supporting both iOS and Android.",
   "main": "library/index.js",
@@ -10,7 +10,7 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chinaczy/react-native-media-kit.git"
+    "url": "https://github.com/chinaczy/react-native-media-kit.git"
   },
   "keywords": [
     "video",
