@@ -5,7 +5,8 @@ import ReactNative, {
   View,
   NativeModules,
   requireNativeComponent,
-  Image
+  Image , 
+  Dimensions
 } from 'react-native';
 
 import Controls from './Controls';
@@ -28,16 +29,18 @@ const RCTMediaPlayerView = requireNativeComponent('RCTMediaPlayerView', {
     onPlayerBuffering: PropTypes.func,
     onPlayerBufferOK: PropTypes.func,
     onPlayerProgress: PropTypes.func,
-    onPlayerBufferChange: PropTypes.func
+    onPlayerBufferChange: PropTypes.func 
+    
   }
 });
-
+let  screenStatus = 1 ;  // 0 : 横屏， 1： 竖屏 
 export default class MediaPlayerView extends React.Component {
-
+  
   static propTypes = {
     ...RCTMediaPlayerView.propTypes,
     controls: PropTypes.bool,
-    poster: PropTypes.string
+    poster: PropTypes.string , 
+    screenUpdate: PropTypes.func
   }
 
   static defaultProps = {
@@ -57,27 +60,30 @@ export default class MediaPlayerView extends React.Component {
 
       width: 0,
       height: 0,
-      showPoster: true
-
+      showPoster: true ,
+      
     };
   }
 
   componentWillUnmount() {
     console.log('componentWillUnmount...');
     this.stop();
+    this.timer && clearTimeout(this.timer);
   }
 
   render() {
+    let width = this.state.width ; 
+    let height = this.state.height ;
     let posterView;
-    if(this.props.poster && this.state.width && this.state.height && this.state.showPoster) {
+    if(this.props.poster && width && height && this.state.showPoster) {
       posterView = (
         <Image
           style={{
           position: 'absolute',
           left: 0, right: 0, top: 0, bottom: 0,
           backgroundColor: 'transparent',
-          width: this.state.width,
-          height: this.state.height,
+          width: width,
+          height: height,
           resizeMode: 'contain'
           }}
           source={{uri: this.props.poster}}/>
@@ -100,7 +106,9 @@ export default class MediaPlayerView extends React.Component {
               this.play();
             }
           }}
+          screenOrientation={screenStatus}
           bufferRanges={this.state.bufferRanges}
+          fullScreen={this.fullScreen.bind(this)}
         />
       );
     }
@@ -130,9 +138,8 @@ export default class MediaPlayerView extends React.Component {
   }
 
   _onLayout(e) {
-    const {width, height} = e.nativeEvent.layout;
+    let {width, height} = e.nativeEvent.layout;
     this.setState({width, height});
-
     this.props.onLayout && this.props.onLayout(e);
   }
 
@@ -143,7 +150,18 @@ export default class MediaPlayerView extends React.Component {
       null
     );
   }
-
+  fullScreen(){
+    screenStatus = ( screenStatus + 1 )% 2;
+    let args = [screenStatus] ;
+    
+    UIManager.dispatchViewManagerCommand(
+      this._getMediaPlayerViewHandle(),
+      UIManager.RCTMediaPlayerView.Commands.fullScreen,
+      args
+    );
+    this.timer = setTimeout(()=>{this.props.screenUpdate && this.props.screenUpdate();} , 500) ;
+    
+  }
   play() {
     this.setState({showPoster: false})
     UIManager.dispatchViewManagerCommand(

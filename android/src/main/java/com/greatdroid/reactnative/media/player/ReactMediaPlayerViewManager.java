@@ -1,5 +1,7 @@
 package com.greatdroid.reactnative.media.player;
 
+import android.app.Activity;
+import android.content.pm.ActivityInfo;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -16,6 +18,7 @@ import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.uimanager.annotations.ReactProp;
 import com.facebook.react.uimanager.events.Event;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
+import com.greatdroid.reactnative.media.MainActivityInstance;
 
 import java.util.Map;
 
@@ -36,9 +39,10 @@ public class ReactMediaPlayerViewManager extends SimpleViewManager<ReactMediaPla
   public static final int CMD_PAUSE = 2;
   public static final int CMD_SEEK_TO = 3;
   public static final int CMD_STOP = 4;
+    private static final int CMD_FULLSCREEN = 5;
 
 
-  @Override
+    @Override
   public String getName() {
     return REACT_CLASS;
   }
@@ -92,7 +96,7 @@ public class ReactMediaPlayerViewManager extends SimpleViewManager<ReactMediaPla
       @Override
       public void onPlayerPlaying() {
         reactContext.getNativeModule(UIManagerModule.class).getEventDispatcher()
-                .dispatchEvent(new Event(view.getId(), SystemClock.uptimeMillis()) {
+                .dispatchEvent(new Event(view.getId()) {
                   @Override
                   public String getEventName() {
                     return EVENT_ON_PLAYER_PLAYING;
@@ -108,7 +112,7 @@ public class ReactMediaPlayerViewManager extends SimpleViewManager<ReactMediaPla
       @Override
       public void onPlayerPaused() {
         reactContext.getNativeModule(UIManagerModule.class).getEventDispatcher()
-                .dispatchEvent(new Event(view.getId(), SystemClock.uptimeMillis()) {
+                .dispatchEvent(new Event(view.getId()) {
                   @Override
                   public String getEventName() {
                     return EVENT_ON_PLAYER_PAUSED;
@@ -124,7 +128,7 @@ public class ReactMediaPlayerViewManager extends SimpleViewManager<ReactMediaPla
       @Override
       public void onPlayerFinished() {
         reactContext.getNativeModule(UIManagerModule.class).getEventDispatcher()
-                .dispatchEvent(new Event(view.getId(), SystemClock.uptimeMillis()) {
+                .dispatchEvent(new Event(view.getId()) {
                   @Override
                   public String getEventName() {
                     return EVENT_ON_PLAYER_FINISHED;
@@ -140,7 +144,7 @@ public class ReactMediaPlayerViewManager extends SimpleViewManager<ReactMediaPla
       @Override
       public void onPlayerBuffering() {
         reactContext.getNativeModule(UIManagerModule.class).getEventDispatcher()
-                .dispatchEvent(new Event(view.getId(), SystemClock.uptimeMillis()) {
+                .dispatchEvent(new Event(view.getId()) {
                   @Override
                   public String getEventName() {
                     return EVENT_ON_PLAYER_BUFFERING;
@@ -156,7 +160,7 @@ public class ReactMediaPlayerViewManager extends SimpleViewManager<ReactMediaPla
       @Override
       public void onPlayerBufferReady() {
         reactContext.getNativeModule(UIManagerModule.class).getEventDispatcher()
-                .dispatchEvent(new Event(view.getId(), SystemClock.uptimeMillis()) {
+                .dispatchEvent(new Event(view.getId()) {
                   @Override
                   public String getEventName() {
                     return EVENT_ON_PLAYER_BUFFER_OK;
@@ -172,7 +176,7 @@ public class ReactMediaPlayerViewManager extends SimpleViewManager<ReactMediaPla
       @Override
       public void onPlayerProgress(final long current, final long total, final long buffered) {
         reactContext.getNativeModule(UIManagerModule.class).getEventDispatcher()
-                .dispatchEvent(new Event(view.getId(), SystemClock.uptimeMillis()) {
+                .dispatchEvent(new Event(view.getId()) {
                   @Override
                   public String getEventName() {
                     return EVENT_ON_PLAYER_PROGRESS;
@@ -190,7 +194,7 @@ public class ReactMediaPlayerViewManager extends SimpleViewManager<ReactMediaPla
         if (buffered > 0 && this.buffered != buffered) {
           this.buffered = buffered;
           reactContext.getNativeModule(UIManagerModule.class).getEventDispatcher()
-                  .dispatchEvent(new Event(view.getId(), SystemClock.uptimeMillis()) {
+                  .dispatchEvent(new Event(view.getId()) {
                     @Override
                     public String getEventName() {
                       return EVENT_ON_PLAYER_BUFFER_CHANGE;
@@ -234,7 +238,8 @@ public class ReactMediaPlayerViewManager extends SimpleViewManager<ReactMediaPla
             "play", CMD_PLAY,
             "pause", CMD_PAUSE,
             "seekTo", CMD_SEEK_TO,
-            "stop", CMD_STOP);
+            "stop", CMD_STOP ,
+            "fullScreen" , CMD_FULLSCREEN );
   }
 
   @Override
@@ -253,6 +258,13 @@ public class ReactMediaPlayerViewManager extends SimpleViewManager<ReactMediaPla
       case CMD_STOP:
         root.getMediaPlayerController().stop();
         break;
+        case CMD_FULLSCREEN:
+            Log.e("ReactNativeJS" , "cmd fullscreen ..." + args.getInt(0)) ;
+            if(MainActivityInstance.getActivity() != null )
+                MainActivityInstance.getActivity().setRequestedOrientation(
+                    args.getInt(0) == 1 ? ActivityInfo.SCREEN_ORIENTATION_PORTRAIT :
+                    ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE );
+            break ;
       default:
         break;
     }

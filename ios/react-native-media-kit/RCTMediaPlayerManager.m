@@ -53,7 +53,11 @@ RCT_EXPORT_METHOD(seekTo:(nonnull NSNumber *)reactTag :(double)timeMs) {
     [view seekTo:timeMs];
   } withTag:reactTag];
 }
-
+RCT_EXPORT_METHOD(fullScreen:(nonnull NSNumber *)reactTag :(int)orientation) {
+    [self executeBlock:^(RCTMediaPlayerView *view) {
+        [view fullScreen:orientation];
+    } withTag:reactTag];
+}
 
 typedef void (^RCTMediaPlayerViewManagerBlock)(RCTMediaPlayerView *view);
 

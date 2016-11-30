@@ -288,8 +288,6 @@ public class MediaPlayerController {
   }
 
 
-
-
   private class InternalEventListener implements MediaCodecVideoTrackRenderer.EventListener, MediaCodecAudioTrackRenderer.EventListener, TextRenderer, ExoPlayer.Listener, MetadataTrackRenderer.MetadataRenderer<List<Id3Frame>> {
 
     @Override

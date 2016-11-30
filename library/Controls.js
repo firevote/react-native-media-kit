@@ -60,7 +60,8 @@ export default class Controls extends React.Component {
     current: 0,
     total: 0,
     buffering: false,
-    playing: false
+    playing: false, 
+    screenOrientation: 1
   }
 
   constructor(props) {
@@ -165,6 +166,12 @@ export default class Controls extends React.Component {
             style={{alignSelf: 'center', fontSize: 12, color: 'white', width: totalFormated.length == 5 ? 35:56, marginRight: 10}}>
             {totalFormated}
           </Text>
+          <TouchableOpacity style={{width: 40, height: 40, alignItems: 'center', justifyContent: 'center'}}
+            onPress={this.props.fullScreen}>
+            <Text style={{color:'white'}}>
+            {this.props.screenOrientation == 1?"全屏":"竖屏"}
+          </Text>
+          </TouchableOpacity>
         </View>
 
       </View>
