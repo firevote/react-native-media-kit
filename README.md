@@ -1,5 +1,9 @@
-# react-native-media-kit
-
+# react-native-fullscreen-media-kit
+基于 #ldn0x7dc/react-native-media-kit 进行功能增加。
+新增功能：
+1、支持全屏播放和指定大小播放切换。
+2、全屏播放时，显示视频标及返回按钮。
+3、3秒自动渐变隐藏播放控制栏及标题栏，点击视频渐变显示控制栏 。
 Video(and audio) component for react-native apps, supporting both iOS and Android, with API similar to HTML video.
 
 A default set of controls is provided to play/pause, seek and to display current playback and buffer progress.
@@ -17,7 +21,7 @@ Supported media types:
 
 ## Install
 
-`npm install --save react-native-media-kit@latest `
+`npm install --save react-native-fullscreen-media-kit`
 
 #### iOS
 
@@ -28,8 +32,8 @@ For now, just drag ***react-native-media-kit.xcodeproj*** into your Xcode projec
 **android/settings.gradle**
 
 ```
-include ':react-native-media-kit'
-project(':react-native-media-kit').projectDir = new File('../node_modules/react-native-media-kit/android')
+include ':react-native-fullscreen-media-kit'
+project(':react-native-fullscreen-media-kit').projectDir = new File('../node_modules/react-native-fullscreen-media-kit/android')
 ```
 
 **android/app/build.gradle**
@@ -37,7 +41,7 @@ project(':react-native-media-kit').projectDir = new File('../node_modules/react-
 ```
 dependencies {
     ...
-    compile project(':react-native-media-kit')
+    compile project(':react-native-fullscreen-media-kit')
 }
 ```
 
@@ -59,21 +63,48 @@ protected List<ReactPackage> getPackages() {
 ## Documentation
 
 ```
-import {Video} from 'react-native-media-kit';
+import {Video} from 'react-native-fullscreen-media-kit';
 ...
+fullScreen(){
+    this.forceUpdate() ; // 横屏强制刷新
+  }
 render() {
-  return (
-  	<Video
-      style={{width: width, height: width / (16/9)}}
-      src={'http://v.yoai.com/femme_tampon_tutorial.mp4'}
-      autoplay={false}
-      preload={'none'}
-      loop={false}
-      controls={true}
-      muted={false}
-      poster={'http://static.yoaicdn.com/shoppc/images/cover_img_e1e9e6b.jpg'}
-    />
-  );
+  let width = Dimensions.get('window').width ; 
+    let height = width / (16/9) ;
+    let screenStatus = 1 ;
+    let bottomView ;
+    let videoStyle ;
+    if(this.video) //获取手机屏幕方向，0：横屏
+      screenStatus = this.video.getScreenStatus();
+    if(screenStatus == 0 ) {
+      videoStyle = {width:width , flex:1} ;
+    }else{
+      bottomView = (
+      <Text>
+        i am a long string \r\n long \r\n long/n...can change line ?
+        </Text>
+      );
+      videoStyle = {width:width,height:height} ;
+    }
+    //非全屏显示bottomView.
+    return (
+      <View style={styles.container}>
+        <Video
+          style={videoStyle}
+          src={'http://v.yoai.com/femme_tampon_tutorial.mp4'}
+          autoplay={false}
+          preload={'none'}
+          loop={false}
+          controls={true}
+          muted={false}
+          ref={(video)=>this.video = video}
+          screenUpdate={this.fullScreen.bind(this)}
+          poster={'http://static.yoaicdn.com/shoppc/images/cover_img_e1e9e6b.jpg'}
+          videoTitle={"如何使用初密"}
+          />
+        {bottomView}
+      </View>
+    );
 }
 
 ```
