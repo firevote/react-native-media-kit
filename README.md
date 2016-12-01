@@ -1,9 +1,10 @@
 # react-native-fullscreen-media-kit
-基于 #ldn0x7dc/react-native-media-kit 进行功能增加。
-新增功能：
-1、支持全屏播放和指定大小播放切换。
-2、全屏播放时，显示视频标及返回按钮。
-3、3秒自动渐变隐藏播放控制栏及标题栏，点击视频渐变显示控制栏 。
+    基于 #ldn0x7dc/react-native-media-kit 进行功能增加。
+    新增功能：
+    1、支持全屏播放和指定大小播放切换。
+    2、全屏播放时，显示视频标及返回按钮。
+    3、3秒自动渐变隐藏播放控制栏及标题栏，点击视频渐变显示控制栏 。
+
 Video(and audio) component for react-native apps, supporting both iOS and Android, with API similar to HTML video.
 
 A default set of controls is provided to play/pause, seek and to display current playback and buffer progress.
