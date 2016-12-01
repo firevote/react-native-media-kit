@@ -6,7 +6,13 @@ import ReactNative, {
   NativeModules,
   requireNativeComponent,
   Image , 
-  Dimensions
+  Dimensions ,
+  Animated ,
+  TouchableWithoutFeedback ,
+  DeviceEventEmitter ,
+  InteractionManager ,
+  Text , 
+  TouchableOpacity
 } from 'react-native';
 
 import Controls from './Controls';
@@ -34,13 +40,15 @@ const RCTMediaPlayerView = requireNativeComponent('RCTMediaPlayerView', {
   }
 });
 let  screenStatus = 1 ;  // 0 : 横屏， 1： 竖屏 
+let showControl = true ;
 export default class MediaPlayerView extends React.Component {
   
   static propTypes = {
     ...RCTMediaPlayerView.propTypes,
     controls: PropTypes.bool,
     poster: PropTypes.string , 
-    screenUpdate: PropTypes.func
+    screenUpdate: PropTypes.func ,
+    videoTitle:PropTypes.string
   }
 
   static defaultProps = {
@@ -61,16 +69,43 @@ export default class MediaPlayerView extends React.Component {
       width: 0,
       height: 0,
       showPoster: true ,
-      
+      controlsAnim: new Animated.Value(1) ,
+
     };
   }
-
+  componentDidMount(){
+    
+  }
   componentWillUnmount() {
-    console.log('componentWillUnmount...');
     this.stop();
     this.timer && clearTimeout(this.timer);
   }
-
+  controlAnimation(){
+    console.log("controlAnimation = " + this.props.controls ) ;
+    if(this.props.controls){
+      this.timer&&clearTimeout(this.timer) ;
+      this.timer = setTimeout(()=>{
+          this.doControlAnimation();
+      } , 3000 ) ;
+    }
+  }
+  getScreenStatus(){
+    return screenStatus ;
+  }
+  doControlAnimation(){
+    
+    let toValue = 0 ;
+          console.log("animated value = " + toValue ) ;
+          if(!showControl)
+            toValue = 1 ;
+          
+          Animated.timing(this.state.controlsAnim , {toValue:toValue , duration:1000}).start(()=>{
+                    showControl = !showControl;
+                    if(showControl){
+                      this.controlAnimation();
+                    }
+                }) ;
+  }
   render() {
     let width = this.state.width ; 
     let height = this.state.height ;
@@ -89,49 +124,81 @@ export default class MediaPlayerView extends React.Component {
           source={{uri: this.props.poster}}/>
       );
     }
-
+    console.log("render controls = " + this.props.controls ) ;
     let controlsView;
     if (this.props.controls) {
       controlsView = (
-        <Controls
-          buffering={this.state.buffering}
-          playing={this.state.playing}
-          current={this.state.current}
-          total={this.state.total}
-          onSeekTo={this.seekTo.bind(this)}
-          onPauseOrPlay={() => {
-            if(this.state.playing) {
-              this.pause();
-            } else {
-              this.play();
-            }
-          }}
-          screenOrientation={screenStatus}
-          bufferRanges={this.state.bufferRanges}
-          fullScreen={this.fullScreen.bind(this)}
+        <Animated.View style={{
+            opacity:this.state.controlsAnim,position: 'absolute', left: 0, right: 0, bottom: 0 
+          }}>
+          <Controls
+            buffering={this.state.buffering}
+            playing={this.state.playing}
+            current={this.state.current}
+            total={this.state.total}
+            onSeekTo={this.seekTo.bind(this)}
+            onPauseOrPlay={() => {
+              if(!showControl){
+                return ;
+              }
+              if(this.state.playing) {
+                this.pause();
+              } else {
+                this.play();
+              }
+            }}
+            screenOrientation={screenStatus}
+            bufferRanges={this.state.bufferRanges}
+            fullScreen={this.fullScreen.bind(this)}
         />
+        </Animated.View>
       );
     }
-
+    let fullScreenToolbar ;
+    if(screenStatus == 0){
+      fullScreenToolbar = (
+        <Animated.View 
+          style={{opacity:this.state.controlsAnim,height:40,backgroundColor:'#11111133'
+                  ,justifyContent:'center',flexDirection:'row',position:'absolute'
+                 ,left:0,right:0,top:0,alignItems:'center'}}>
+            <TouchableOpacity 
+              style={{position:'absolute' , left:10 ,top:10}}
+              onPress={()=>this.fullScreen()}>
+               <Text>
+                 back
+              </Text>
+            </TouchableOpacity>
+            <Text style={{color:'white'}}>
+              {this.props.videoTitle}  
+            </Text>
+        </Animated.View>
+      );
+    }
     return (
       <View
         style={this.props.style}
         onLayout={this._onLayout.bind(this)}>
-
-        <RCTMediaPlayerView
-          {...this.props}
-          style={{flex: 1, alignSelf: 'stretch'}}
-          ref={RCT_MEDIA_PLAYER_VIEW_REF}
-          onPlayerPlaying={this._onPlayerPlaying.bind(this)}
-          onPlayerProgress={this._onPlayerProgress.bind(this)}
-          onPlayerPaused={this._onPlayerPaused.bind(this)}
-          onPlayerBuffering={this._onPlayerBuffering.bind(this)}
-          onPlayerBufferOK={this._onPlayerBufferOK.bind(this)}
-          onPlayerFinished={this._onPlayerFinished.bind(this)}
-          onPlayerBufferChange={this._onPlayerBufferChange.bind(this)}
-        />
-
+        
+        <TouchableWithoutFeedback
+          onPress={()=>{
+            console.log("video click = " + showControl ) ;
+            this.doControlAnimation();            
+          }}>
+          <RCTMediaPlayerView
+            {...this.props}
+            style={{flex: 1, alignSelf: 'stretch'}}
+            ref={RCT_MEDIA_PLAYER_VIEW_REF}
+            onPlayerPlaying={this._onPlayerPlaying.bind(this)}
+            onPlayerProgress={this._onPlayerProgress.bind(this)}
+            onPlayerPaused={this._onPlayerPaused.bind(this)}
+            onPlayerBuffering={this._onPlayerBuffering.bind(this)}
+            onPlayerBufferOK={this._onPlayerBufferOK.bind(this)}
+            onPlayerFinished={this._onPlayerFinished.bind(this)}
+            onPlayerBufferChange={this._onPlayerBufferChange.bind(this)}
+          />
+        </TouchableWithoutFeedback>
         {posterView}
+        {fullScreenToolbar}
         {controlsView}
       </View>
     );
@@ -144,6 +211,7 @@ export default class MediaPlayerView extends React.Component {
   }
 
   pause() {
+    this.timer&&clearTimeout(this.timer);
     UIManager.dispatchViewManagerCommand(
       this._getMediaPlayerViewHandle(),
       UIManager.RCTMediaPlayerView.Commands.pause,
@@ -151,6 +219,9 @@ export default class MediaPlayerView extends React.Component {
     );
   }
   fullScreen(){
+    if(!showControl)
+      return ;
+    
     screenStatus = ( screenStatus + 1 )% 2;
     let args = [screenStatus] ;
     
@@ -159,11 +230,12 @@ export default class MediaPlayerView extends React.Component {
       UIManager.RCTMediaPlayerView.Commands.fullScreen,
       args
     );
-    this.timer = setTimeout(()=>{this.props.screenUpdate && this.props.screenUpdate();} , 500) ;
-    
+    this.timer = setTimeout(()=>this.props.screenUpdate&&this.props.screenUpdate() , 500 ) ;
   }
   play() {
     this.setState({showPoster: false})
+    this.controlAnimation();
+    
     UIManager.dispatchViewManagerCommand(
       this._getMediaPlayerViewHandle(),
       UIManager.RCTMediaPlayerView.Commands.play,
@@ -172,6 +244,7 @@ export default class MediaPlayerView extends React.Component {
   }
 
   stop() {
+    this.timer&&clearTimeout(this.timer) ;
     UIManager.dispatchViewManagerCommand(
       this._getMediaPlayerViewHandle(),
       UIManager.RCTMediaPlayerView.Commands.stop,
@@ -180,6 +253,9 @@ export default class MediaPlayerView extends React.Component {
   }
 
   seekTo(timeMs) {
+    if(!showControl&&!this.state.isplaying)
+      return ;
+    this.controlAnimation();
     this.setState({showPoster: false})
     let args = [timeMs];
     UIManager.dispatchViewManagerCommand(
@@ -246,17 +322,25 @@ export default class MediaPlayerView extends React.Component {
   }
 
   _onPlayerFinished() {
+    this.timer&&clearTimeout(this.timer);
+    Animated.timing(this.state.controlsAnim , {toValue:1 , duration:100}).start();
+    showControl = true ;
+    
     this.props.onPlayerFinished && this.props.onPlayerFinished();
 
     if (this.props.controls) {
       this.setState({
         playing: false,
-        buffering: false
+        buffering: false ,
+        current:0 ,
+        showPoster:true
       });
     }
   }
 
   _onPlayerProgress(event) {
+    if(!showControl)
+      return ;
     let current = event.nativeEvent.current; //in ms
     let total = event.nativeEvent.total; //in ms
 

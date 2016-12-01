@@ -12,6 +12,7 @@ import ReactNative, {
   Image,
   Platform,
   ActivityIndicator,
+  Animated
 } from 'react-native';
 
 import Slider from '@ldn0x7dc/react-native-slider';
@@ -118,7 +119,9 @@ export default class Controls extends React.Component {
 
     return (
       <View
-        style={{position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
+        style={{
+          flexDirection: 'column', alignItems: 'center', justifyContent: 'center' ,height:40
+        }}>
         {bufferIndicator}
         <View
           style={{position: 'absolute', left: 0, right: 0, bottom: 0, height: 40, backgroundColor: '#00000033', flexDirection: 'row'}}>
@@ -141,7 +144,7 @@ export default class Controls extends React.Component {
             trackContainerStyle={{height: 2, backgroundColor: 'gray'}}
             thumbImage={require('./img/media-player-thumb.png')}
             thumbStyle={{width: 10, height: 10}}
-
+            
             onSlidingComplete={(value) => {
               this.setState({
                 sliding: false,
