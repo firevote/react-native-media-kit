@@ -4,6 +4,7 @@
     1、支持全屏播放和指定大小播放切换。
     2、全屏播放时，显示视频标及返回按钮。
     3、3秒自动渐变隐藏播放控制栏及标题栏，点击视频渐变显示控制栏 。
+    4、支持多种分辨率切换。
 
 Video(and audio) component for react-native apps, supporting both iOS and Android, with API similar to HTML video.
 
@@ -18,7 +19,8 @@ Supported media types:
 
 * Android: Shold be same as those supported by [ExoPlayer](https://github.com/google/ExoPlayer)
 
-![](Demo/demo.gif).
+![](Demo/play.png).
+![](Demo/fullscreen.png).
 
 ## Install
 
