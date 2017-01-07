@@ -5,6 +5,8 @@ import android.content.pm.ActivityInfo;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.View;
+import android.view.WindowManager;
 
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.WritableArray;
@@ -259,11 +261,17 @@ public class ReactMediaPlayerViewManager extends SimpleViewManager<ReactMediaPla
         root.getMediaPlayerController().stop();
         break;
         case CMD_FULLSCREEN:
-            Log.e("ReactNativeJS" , "cmd fullscreen ..." + args.getInt(0)) ;
-            if(MainActivityInstance.getActivity() != null )
-                MainActivityInstance.getActivity().setRequestedOrientation(
-                    args.getInt(0) == 1 ? ActivityInfo.SCREEN_ORIENTATION_PORTRAIT :
-                    ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE );
+            Activity activity = MainActivityInstance.getActivity();
+            if(activity!= null )
+                if(args.getInt(0)==1){
+                    activity.setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                    activity.getWindow().setFlags(0,0);
+                }
+                else{
+                    activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE );
+                    activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                }
+
             break ;
       default:
         break;

@@ -11,7 +11,8 @@ import ReactNative, {
   ScrollView,
   Image,
   Platform,
-  Animated
+  Animated ,
+  TouchableWithoutFeedback
 } from 'react-native';
 
 import Slider from '@ldn0x7dc/react-native-slider';
@@ -53,7 +54,6 @@ function formatProgress(timeSec, containHours) {
   }
   return minutes + ':' + seconds;
 }
-
 export default class Controls extends React.Component {
 
   defaultProps = {
@@ -69,6 +69,8 @@ export default class Controls extends React.Component {
     this.state = {
       sliding: false,
       current: this.props.current,
+      selectSource:0,
+      showAllSourceView:false
     };
   }
 
@@ -81,7 +83,9 @@ export default class Controls extends React.Component {
       }
     }
   }
-
+  componentWillUnmount(){
+    this.timer&&clearTimeout(this.timer);
+  }
   render() {
     const containHours = this.props.total >= 60 * 60 * 1000;
     const currentFormated = formatProgress(this.state.current / 1000, containHours);
@@ -105,7 +109,18 @@ export default class Controls extends React.Component {
         style: {backgroundColor: 'white'}
       }
     );
+    let selectSourceView ;
     
+    if(this.props.showSource){
+      selectSourceView = (
+        <TouchableOpacity 
+        onPress={this.props.showAllSourceView}
+        style={{width:40,height:40,alignItems:"center",justifyContent:"center"}}>
+          <Text style={{textAlign:"center",fontSize:12,color:"white"}}>{this.props.sourceName}</Text>
+        </TouchableOpacity>
+      ) ;
+    }
+
     return (
       <View
         style={{
@@ -143,7 +158,8 @@ export default class Controls extends React.Component {
             style={{alignSelf: 'center', fontSize: 12, color: 'white', width: totalFormated.length == 5 ? 35:56, marginRight: 10}}>
               {totalFormated}
           </Text>
-          <View style={{flex:1,alignItems:"flex-end"}}>
+          <View style={{flex:1,justifyContent:"flex-end",flexDirection:"row"}}>
+            {selectSourceView}
             <TouchableOpacity style={{width: 40, height: 40, alignItems: 'center', justifyContent: 'center'}}
                 onPress={this.props.fullScreen}>
                 <Image 

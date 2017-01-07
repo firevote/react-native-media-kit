@@ -13,7 +13,8 @@ import ReactNative, {
   InteractionManager ,
   Text , 
   TouchableOpacity ,
-  ActivityIndicator
+  ActivityIndicator,
+  Platform
 } from 'react-native';
 
 import Controls from './Controls';
@@ -29,7 +30,7 @@ const RCTMediaPlayerView = requireNativeComponent('RCTMediaPlayerView', {
     preload: PropTypes.string,
     loop: PropTypes.bool,
     muted: PropTypes.bool,
-
+    srcs:PropTypes.array,
     onPlayerPaused: PropTypes.func,
     onPlayerPlaying: PropTypes.func,
     onPlayerFinished: PropTypes.func,
@@ -40,7 +41,7 @@ const RCTMediaPlayerView = requireNativeComponent('RCTMediaPlayerView', {
     
   }
 });
-
+const sourceKinds = ["流畅","标清","高清","超清"];
 export default class MediaPlayerView extends React.Component {
   screenStatus = 1 ;  // 0 : 横屏， 1： 竖屏 
   showControl = true ;
@@ -71,7 +72,8 @@ export default class MediaPlayerView extends React.Component {
       height: 0,
       showPoster: false ,
       controlsAnim: new Animated.Value(1) ,
-
+      selectVideoSource:0,
+      showAllSourceView:false
     };
   }
   componentDidMount(){
@@ -82,7 +84,6 @@ export default class MediaPlayerView extends React.Component {
     this.timer && clearTimeout(this.timer);
   }
   controlAnimation(){
-    console.log("controlAnimation = " + this.props.controls ) ;
     if(this.props.controls){
       this.timer&&clearTimeout(this.timer) ;
       this.timer = setTimeout(()=>{
@@ -96,18 +97,31 @@ export default class MediaPlayerView extends React.Component {
   doControlAnimation(){
     
     let toValue = 0 ;
-          console.log("animated value = " + toValue ) ;
-          if(!this.showControl)
-            toValue = 1 ;
-          
-          Animated.timing(this.state.controlsAnim , {toValue:toValue , duration:1000}).start(()=>{
-                    this.showControl = !this.showControl;
-                    if(this.showControl){
-                      this.controlAnimation();
-                    }
-                }) ;
+    if(!this.showControl)
+      toValue = 1 ;
+    if(this.showControl&&this.state.showAllSourceView){
+      this.setState({showAllSourceView:false});
+    }
+    Animated.timing(this.state.controlsAnim , {toValue:toValue , duration:1000}).start(()=>{
+              this.showControl = !this.showControl;
+              if(this.showControl){
+                this.controlAnimation();
+              }
+          }) ;
   }
 
+  changeVideoSource(index){//选择了视频分辨率
+    
+    if(this.props.srcs.length > index ){
+      this.seekToFlag = true ;
+      this.currentPlay = this.state.current ;
+      this.setState({
+        selectVideoSource:index,
+        showAllSourceView:false
+      });
+    }
+    
+  }
   render() {
     let width = this.state.width ; 
     let height = this.state.height ;
@@ -141,15 +155,55 @@ export default class MediaPlayerView extends React.Component {
           size={'large'}/>
       );
     }
+    let showAllSourceView ; //显示选择分辨率
+    if(this.state.showAllSourceView){
+      let right = 40 ;
+      let bottom = 5 ;
+      showAllSourceView = (
+        <View style={{position:"absolute",bottom:bottom,right:right,width:40,height:120}}>
+            {
+              sourceKinds.map((key , index )=>{
+                return (
+                  <TouchableOpacity
+                    onPress={()=>{
+                      this.controlAnimation();
+                      this.changeVideoSource(index);}}
+                    style={{width:40,height:30,alignItems:"center",justifyContent:"center",backgroundColor:"#00000088",borderWidth:0.5,borderColor:"#ffffff88"}}>
+                      <Text style={{textAlign:"center",fontSize:12,color:"white"}}>{key}</Text>
+                    </TouchableOpacity>
+                  );
+              })
+            }
+        </View>
+        );
+    }
+    let src = this.props.src ; 
+    let showSourceList = false ;
+    if(!src){
+      
+      src = this.props.srcs[this.state.selectVideoSource];
+      if(this.props.srcs.length>1)
+        showSourceList = true ;
+      if( src && typeof src != "string"){
+        src = src.url ;
+      }
+    }
+    //有src属性，不显示选择分辨率
 
     let controlsView;
     if (this.props.controls) {
+      
       controlsView = (
         <Animated.View style={{
             opacity:this.state.controlsAnim,position: 'absolute', left: 0, right: 0, bottom: 0 
           }}>
           <Controls
-            
+            showAllSourceView={()=>{
+              this.setState({showAllSourceView:true});
+              this.controlAnimation();
+            }}
+            showSource={showSourceList&&!this.showAllSourceView}
+            sourceName={sourceKinds[this.state.selectVideoSource]}
             playing={this.state.playing}
             current={this.state.current}
             total={this.state.total}
@@ -177,27 +231,29 @@ export default class MediaPlayerView extends React.Component {
       videoTitle = videoTitle.substr(0,19) + "..." ;
     let fullScreenToolbar ;
     if(this.screenStatus == 0){
-      fullScreenToolbar = (
-        <Animated.View 
-          style={{opacity:this.state.controlsAnim,height:40,backgroundColor:'#11111188'
-                  ,justifyContent:'center',flexDirection:'row',position:'absolute'
-                 ,left:0,right:0,top:0,alignItems:'center'}}>
-            <TouchableOpacity 
-              style={{position:'absolute' , left:10 ,top:10}}
-              onPress={()=>this.fullScreen()}>
-               <Image 
-                  style={{width:24,height:24}}
-                  source={require("./img/back.png")}
-               />
-            </TouchableOpacity>
-            <Text 
-              style={{color:'white'}}
-              numberOfLines={1}>
-              {this.props.videoTitle}  
-            </Text>
-        </Animated.View>
-      );
+      
+        fullScreenToolbar = (
+          <Animated.View 
+            style={{opacity:this.state.controlsAnim,height:40,backgroundColor:'#11111188'
+                    ,justifyContent:'center',flexDirection:'row',position:'absolute'
+                   ,left:0,right:0,top:0,alignItems:'center'}}>
+              <TouchableOpacity 
+                style={{position:'absolute' , left:10 ,top:10}}
+                onPress={()=>this.fullScreen()}>
+                 <Image 
+                    style={{width:24,height:24,padding:8}}
+                    source={require("./img/back.png")}
+                 />
+              </TouchableOpacity>
+              <Text 
+                style={{color:'white'}}
+                numberOfLines={1}>
+                {this.props.videoTitle}  
+              </Text>
+          </Animated.View>
+        );
     }
+    
     return (
       <View
         style={this.props.style}
@@ -210,6 +266,7 @@ export default class MediaPlayerView extends React.Component {
           }}>
           <RCTMediaPlayerView
             {...this.props}
+            src={src}
             style={{flex: 1, alignSelf: 'stretch'}}
             ref={RCT_MEDIA_PLAYER_VIEW_REF}
             onPlayerPlaying={this._onPlayerPlaying.bind(this)}
@@ -225,17 +282,18 @@ export default class MediaPlayerView extends React.Component {
         {fullScreenToolbar}
         {bufferIndicator}
         {controlsView}
+        {showAllSourceView}
       </View>
     );
   }
   keyBack(){
-    console.log("key back = " + this.screenStatus ) ;
-    if(this.screenStatus == 0){
-      this.showControl = true ;
-      this.fullScreen();
-      return true ;
-    }
-    return false ;
+    let args = [1] ;
+    
+    UIManager.dispatchViewManagerCommand(
+      this._getMediaPlayerViewHandle(),
+      UIManager.RCTMediaPlayerView.Commands.fullScreen,
+      args
+    );
   }
   _onLayout(e) {
     let {width, height} = e.nativeEvent.layout;
@@ -263,7 +321,7 @@ export default class MediaPlayerView extends React.Component {
       UIManager.RCTMediaPlayerView.Commands.fullScreen,
       args
     );
-    this.timer = setTimeout(()=>this.props.screenUpdate&&this.props.screenUpdate() , 500 ) ;
+    this.timer = setTimeout(()=>this.props.screenUpdate&&this.props.screenUpdate() , 800 ) ;
   }
   play() {
     this.setState({showPoster: false})
@@ -330,6 +388,10 @@ export default class MediaPlayerView extends React.Component {
         buffering: false
       });
     }
+    if(this.seekToFlag){
+      this.seekToFlag = false ;
+      this.seekTo(this.currentPlay);
+    }
   }
 
 
@@ -372,8 +434,7 @@ export default class MediaPlayerView extends React.Component {
   }
 
   _onPlayerProgress(event) {
-    if(!this.showControl)
-      return ;
+    
     let current = event.nativeEvent.current; //in ms
     let total = event.nativeEvent.total; //in ms
 
