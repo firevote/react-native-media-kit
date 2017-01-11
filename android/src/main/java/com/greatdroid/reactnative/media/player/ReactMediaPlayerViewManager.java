@@ -265,7 +265,7 @@ public class ReactMediaPlayerViewManager extends SimpleViewManager<ReactMediaPla
             if(activity!= null )
                 if(args.getInt(0)==1){
                     activity.setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                    activity.getWindow().setFlags(0,0);
+                    activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                 }
                 else{
                     activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE );
