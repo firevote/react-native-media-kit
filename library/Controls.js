@@ -142,7 +142,7 @@ export default class Controls extends React.Component {
             onPress={this.props.next}
             style={{width: 40, height: 40, alignItems: 'center', justifyContent: 'center'}}>
             <Image
-              style={{width: 28, height: 28, resizeMode: 'contain'}}
+              style={{width: 24, height: 24, resizeMode: 'contain'}}
               source={require("./img/next.png")}/>
           </TouchableOpacity>
 
