@@ -37,7 +37,8 @@ const RCTMediaPlayerView = requireNativeComponent('RCTMediaPlayerView', {
     onPlayerBuffering: PropTypes.func,
     onPlayerBufferOK: PropTypes.func,
     onPlayerProgress: PropTypes.func,
-    onPlayerBufferChange: PropTypes.func 
+    onPlayerBufferChange: PropTypes.func ,
+    canSeekUnwatch:PropTypes.bool
     
   }
 });
@@ -58,6 +59,7 @@ export default class MediaPlayerView extends React.Component {
     controls: true,
     preload: 'none',
     loop: false,
+    canSeekUnwatch:true
   }
 
   constructor(props) {
@@ -97,12 +99,13 @@ export default class MediaPlayerView extends React.Component {
   doControlAnimation(){
     
     let toValue = 0 ;
-    if(!this.showControl)
+    if(!this.showControl){
       toValue = 1 ;
+    }
     if(this.showControl&&this.state.showAllSourceView){
       this.setState({showAllSourceView:false});
     }
-    Animated.timing(this.state.controlsAnim , {toValue:toValue , duration:1000}).start(()=>{
+    Animated.timing(this.state.controlsAnim , {toValue:toValue , duration:500}).start(()=>{
               this.showControl = !this.showControl;
               if(this.showControl){
                 this.controlAnimation();
@@ -261,8 +264,10 @@ export default class MediaPlayerView extends React.Component {
         
         <TouchableWithoutFeedback
           onPress={()=>{
-            if(this.state.playing)
-              this.doControlAnimation();            
+            if(this.state.playing){
+              this.doControlAnimation();     
+                   
+            }
           }}>
           <RCTMediaPlayerView
             {...this.props}
@@ -310,6 +315,7 @@ export default class MediaPlayerView extends React.Component {
     );
   }
   fullScreen(){
+    console.log("fullScreen = " + this.showControl ) ;
     if(!this.showControl)
       return ;
     
@@ -346,6 +352,19 @@ export default class MediaPlayerView extends React.Component {
   seekTo(timeMs) {
     if(!this.showControl&&!this.state.isplaying)
       return ;
+    if(!this.props.canSeekUnwatch){
+      let maxSeek = Math.max(this.state.current , this.seekBackCurrent) ;
+      if(this.state.current < this.seekBackCurrent ){
+        if(timeMs > maxSeek)
+          timeMs = maxSeek ;
+      }
+      if(timeMs > maxSeek){
+        return ;
+      }
+      else if(this.seekBackCurrent < this.state.current){
+        this.seekBackCurrent = this.state.current ;
+      }
+    }
     this.controlAnimation();
     this.setState({showPoster: false})
     let args = [timeMs];
