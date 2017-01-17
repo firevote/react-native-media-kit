@@ -1,6 +1,6 @@
 {
   "name": "react-native-fullscreen-media-kit",
-  "version": "0.8.2",
+  "version": "0.8.4",
   "description": "Video and Audio component for react-native apps, supporting both iOS and Android.",
   "main": "library/index.js",
   "scripts": {

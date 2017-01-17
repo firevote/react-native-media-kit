@@ -46,6 +46,7 @@ const sourceKinds = ["流畅","标清","高清","超清"];
 export default class MediaPlayerView extends React.Component {
   screenStatus = 1 ;  // 0 : 横屏， 1： 竖屏 
   showControl = true ;
+  seekBackCurrent = 0 ;
   static propTypes = {
     ...RCTMediaPlayerView.propTypes,
     controls: PropTypes.bool,
@@ -354,6 +355,7 @@ export default class MediaPlayerView extends React.Component {
       return ;
     if(!this.props.canSeekUnwatch){
       let maxSeek = Math.max(this.state.current , this.seekBackCurrent) ;
+      console.log("seek = " , maxSeek , this.state.current , this.seekBackCurrent);
       if(this.state.current < this.seekBackCurrent ){
         if(timeMs > maxSeek)
           timeMs = maxSeek ;
