@@ -61,7 +61,17 @@ protected List<ReactPackage> getPackages() {
 }
 ```
 
+**MainActivity.java**
 
+```
+...
+public void onCreate(Bundle b){
+    MainActivityInstance.setActivity(this);
+}
+public void onDestroy(){
+    MainActivityInstance.clear();
+}
+```
 
 ## Documentation
 
