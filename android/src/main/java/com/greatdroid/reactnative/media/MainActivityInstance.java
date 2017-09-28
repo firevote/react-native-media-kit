@@ -2,9 +2,6 @@ package com.greatdroid.reactnative.media;
 
 import android.app.Activity;
 
-import java.lang.ref.SoftReference;
-import java.lang.ref.WeakReference;
-
 /**
  * Created by kit on 16/11/28.
  */
@@ -17,6 +14,9 @@ public class MainActivityInstance {
         if(activity!=null)
             activitySoftReference = new SoftReference<Activity>(activity) ;
 
+    }
+    public static void clear(){
+           activitySoftReference.clear();
     }
     public static  Activity getActivity(){
         return activitySoftReference.get() ;
