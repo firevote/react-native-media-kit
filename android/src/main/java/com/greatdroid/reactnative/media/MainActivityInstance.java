@@ -1,6 +1,7 @@
 package com.greatdroid.reactnative.media;
 
 import android.app.Activity;
+import java.lang.ref.SoftReference;
 
 /**
  * Created by kit on 16/11/28.
