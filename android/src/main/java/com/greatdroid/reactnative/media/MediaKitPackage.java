@@ -19,7 +19,7 @@ public class MediaKitPackage implements ReactPackage {
   }
 
 
-  @Override
+  //@Override rn>0.47
   public List<Class<? extends JavaScriptModule>> createJSModules() {
     return Collections.emptyList();
   }
